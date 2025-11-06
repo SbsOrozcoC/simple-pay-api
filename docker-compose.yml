@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    container_name: simplepay_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: simplepay
+      MYSQL_USER: simplepay
+      MYSQL_PASSWORD: simplepay
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: simplepay_backend
+    restart: unless-stopped
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_DATABASE: simplepay
+      DB_USERNAME: simplepay
+      DB_PASSWORD: simplepay
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: simplepay_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/usr/src/app
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
