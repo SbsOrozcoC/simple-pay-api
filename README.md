@@ -113,6 +113,27 @@ Comando	-- Descripción
     http://localhost:5173/
 ```
 
+## 🔄 Proceso de Checkout Simulado
+
+El módulo de suscripción incluye un proceso de checkout simulado con las siguientes características:
+
+### Probabilidades de Éxito/Fallo
+- **50% de probabilidad de éxito**: Suscripción activada correctamente
+- **50% de probabilidad de fallo**: Pago rechazado (simula errores de tarjeta, fondos insuficientes, etc.)
+
+### Validaciones Implementadas
+- No se permite suscripción múltiple activa simultánea
+- Usuario debe estar autenticado para acceder a las funciones de suscripción
+- Estados de suscripción: `pending`, `active`, `canceled`
+
+### Flujo de Usuario
+1. Usuario hace clic en "Suscribirse ahora"
+2. Sistema simula procesamiento de pago (2-3 segundos)
+3. Resultado aleatorio: Éxito (activación) o Fallo (reintentar)
+4. En caso de éxito: Redirección automática al panel de usuario
+5. En caso de fallo: Mensaje de error con opción a reintentar
+
+
 ### Notas finales
 Este entorno está diseñado para ejecutarse en cualquier sistema operativo con Docker instalado (Linux, macOS o Windows).
 Todos los servicios son auto-contenidos, por lo que no requieren configuraciones adicionales.

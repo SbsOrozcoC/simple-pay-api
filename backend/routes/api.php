@@ -8,3 +8,4 @@ Route::get('/health', function () {
 
 // Cargar rutas del módulo Auth
 require app_path('Modules/Auth/Routes/api.php');
+require app_path('Modules/Subscriptions/Routes/api.php');
