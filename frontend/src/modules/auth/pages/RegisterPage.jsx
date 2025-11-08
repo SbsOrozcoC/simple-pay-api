@@ -1,5 +1,6 @@
 import Swal from "sweetalert2";
 import AuthForm from "../components/AuthForm";
+import "../styles/auth.css";
 import { authService } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 
@@ -23,10 +24,5 @@ export default function RegisterPage() {
     }
   };
 
-  return (
-    <div>
-      <h2>Crear cuenta</h2>
-      <AuthForm type="register" onSubmit={handleRegister} />
-    </div>
-  );
+  return <AuthForm type="register" onSubmit={handleRegister} />;
 }

@@ -32,10 +32,5 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    <div>
-      <h2>Iniciar sesión</h2>
-      <AuthForm type="login" onSubmit={handleLogin} />
-    </div>
-  );
+  return <AuthForm type="login" onSubmit={handleLogin} />;
 }
