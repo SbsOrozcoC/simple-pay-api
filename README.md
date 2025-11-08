@@ -35,6 +35,7 @@ Antes de iniciar asegúrate de tener instalados:
 ```
 
 ## Estructura del proyecto
+El proyecto esta con un encarpetado modular.
 simple-pay-api/
 ├── backend/               # API REST con Laravel
 │   ├── Dockerfile
@@ -97,6 +98,9 @@ Comando	-- Descripción
     docker compose ps	                     ---  Lista contenedores y puertos
     docker logs <nombre_contenedor>	         ---  Muestra logs del contenedor (ej: simplepay_frontend)
     docker exec -it simplepay_backend bash   ---  Ingresa al contenedor del backend
+    docker exec -it simplepay_frontend bash  ---  Ingresa al contenedor del frontend
+    docker compose restart backend           ---  Reinicia el contenedor del backend
+    docker compose restart frontend          ---  Reinicia el contenedor del frontend
     docker compose up -d --build frontend    ---  Reconstruye solo el frontend
 ```
 
