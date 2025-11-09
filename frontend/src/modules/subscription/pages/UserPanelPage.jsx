@@ -4,28 +4,21 @@ import Swal from 'sweetalert2';
 import Navbar from '../../dashboard/components/Navbar';
 import SubscriptionStatus from '../components/SubscriptionStatus';
 import { subscriptionService } from '../services/subscriptionService';
+import useAuthStore from '../../auth/store/authStore';
 
 export default function UserPanelPage() {
     const navigate = useNavigate();
-    const [subscription, setSubscription] = useState(null);
+    const { subscription, setSubscription, loadSubscription } = useAuthStore();
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingStatus, setIsLoadingStatus] = useState(true);
 
     useEffect(() => {
-        loadSubscription();
-    }, []);
-
-    const loadSubscription = async () => {
-        try {
-            const response = await subscriptionService.getSubscription();
-            setSubscription(response.subscription);
-        } catch (error) {
-            console.error('Error loading subscription:', error);
-            Swal.fire('Error', 'No se pudo cargar la información de la suscripción', 'error');
-        } finally {
+        const initializePanel = async () => {
+            await loadSubscription();
             setIsLoadingStatus(false);
-        }
-    };
+        };
+        initializePanel();
+    }, [loadSubscription]);
 
     const handleCancelSubscription = async () => {
         const result = await Swal.fire({
@@ -117,10 +110,10 @@ export default function UserPanelPage() {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${subscription?.status === 'active'
-                                            ? 'bg-green-100 text-green-800'
-                                            : subscription?.status === 'canceled'
-                                                ? 'bg-gray-100 text-gray-800'
-                                                : 'bg-yellow-100 text-yellow-800'
+                                        ? 'bg-green-100 text-green-800'
+                                        : subscription?.status === 'canceled'
+                                            ? 'bg-gray-100 text-gray-800'
+                                            : 'bg-yellow-100 text-yellow-800'
                                         }`}>
                                         {subscription?.status || 'inactive'}
                                     </span>

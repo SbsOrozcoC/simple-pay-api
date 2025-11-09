@@ -2,30 +2,23 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import StatsCard from '../components/StatsCard';
-import { subscriptionService } from '../../subscription/services/subscriptionService';
+import useAuthStore from '../../auth/store/authStore';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const [subscription, setSubscription] = useState(null);
+  const { subscription, loadSubscription, logout } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadSubscription();
-  }, []);
-
-  const loadSubscription = async () => {
-    try {
-      const response = await subscriptionService.getSubscription();
-      setSubscription(response.subscription);
-    } catch (error) {
-      console.error('Error loading subscription:', error);
-    } finally {
+    const initializeDashboard = async () => {
+      await loadSubscription();
       setIsLoading(false);
-    }
-  };
+    };
+    initializeDashboard();
+  }, [loadSubscription]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    logout();
     navigate('/login');
   };
 

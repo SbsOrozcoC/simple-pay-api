@@ -5,28 +5,21 @@ import PlanCard from '../components/PlanCard';
 import SubscriptionStatus from '../components/SubscriptionStatus';
 import { subscriptionService } from '../services/subscriptionService';
 import Navbar from '../../dashboard/components/Navbar';
+import useAuthStore from '../../auth/store/authStore';
 
 export default function SubscriptionPage() {
     const navigate = useNavigate();
-    const [subscription, setSubscription] = useState(null);
+    const { subscription, setSubscription, loadSubscription } = useAuthStore();
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingStatus, setIsLoadingStatus] = useState(true);
 
     useEffect(() => {
-        loadSubscription();
-    }, []);
-
-    const loadSubscription = async () => {
-        try {
-            const response = await subscriptionService.getSubscription();
-            setSubscription(response.subscription);
-        } catch (error) {
-            console.error('Error loading subscription:', error);
-            Swal.fire('Error', 'No se pudo cargar la información de la suscripción', 'error');
-        } finally {
+        const initializeSubscription = async () => {
+            await loadSubscription();
             setIsLoadingStatus(false);
-        }
-    };
+        };
+        initializeSubscription();
+    }, [loadSubscription]);
 
     const handleSubscribe = async () => {
         setIsLoading(true);
@@ -53,7 +46,6 @@ export default function SubscriptionPage() {
         } catch (error) {
             console.error('Subscription error:', error);
 
-            // Manejar error de validación (suscripción activa)
             if (error.response?.data?.errors?.subscription) {
                 Swal.fire({
                     icon: 'warning',
@@ -64,7 +56,7 @@ export default function SubscriptionPage() {
                     navigate('/panel');
                 });
             } else {
-                Swal.fire('Error', 'Ocurrió un error al procesar la suscripción, se encuentra una activa.', 'error');
+                Swal.fire('Error', 'Ocurrió un error al procesar la suscripción', 'error');
             }
         } finally {
             setIsLoading(false);
