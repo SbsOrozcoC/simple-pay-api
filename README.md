@@ -47,23 +47,24 @@ simple-pay-api/
 │   ├── package.json
 │   └── ...
 │
-├── mysql/                 # Configuración inicial de la base de datos (opcional)
+├── mysql/                 # Configuración inicial de la base de datos
 │   └── init.sql
 │
 ├── docker-compose.yml     # Orquestador principal
-├── .env.example
+├── .env
 └── README.md
 
-# Instalación y ejecución paso a paso
-### 1. Clonar el repositorio
-```bash
-    git clone https://github.com/<tu-usuario>/simple-pay-api.git
-    cd simple-pay-api
-```
-### 2. Crear y configurar el archivo .env
-```bash
-    cp backend/.env.example backend/.env
-```
+
+## 🚀 GUÍA RÁPIDA DE INSTALACIÓN
+
+### ✅ Prerrequisitos
+- [ ] Tener Docker Desktop instalado y ejecutándose
+- [ ] Tener Git instalado
+
+### ✅ Pasos de instalación
+1. [ ] `git clone https://github.com/SbsOrozcoC/simple-pay-api.git`
+2. [ ] `cd simple-pay-api`
+3. [ ] `cp backend/.env backend/.env`
 Asegúrate de que las variables de conexión sean las siguientes:
 ```bash
     DB_CONNECTION=mysql
@@ -73,22 +74,21 @@ Asegúrate de que las variables de conexión sean las siguientes:
     DB_USERNAME=simplepay
     DB_PASSWORD=simplepay
 ```
-### 3. Desarrollo aplicación suscripción
-```bash
-    docker compose up --build
-```
-
-### 4. Inicializar Laravel dentro del contenedor
-```bash
-    docker exec -it simplepay_backend bash
-```
-Luego ejecuta:
-```bash
-    php artisan key:generate
-    php artisan migrate
-```
+4. [ ] `docker compose up --build`
+5. [ ] **En NUEVA terminal:** `docker exec -it simplepay_backend php artisan key:generate`
+6. [ ] `docker exec -it simplepay_backend php artisan migrate`
 Esto generará la clave de aplicación y creará las tablas necesarias en la base de datos.
+7. [ ] **Abrir en navegador:** http://localhost:5173
 
+### ✅ Verificar instalación
+- [ ] Frontend funciona en: 
+```bash
+    http://localhost:5173
+```
+- [ ] Backend responde en: 
+```bash
+    http://localhost:8000
+```
 
 ## Comandos útiles de Docker
 Comando	-- Descripción
@@ -104,14 +104,8 @@ Comando	-- Descripción
     docker compose up -d --build frontend    ---  Reconstruye solo el frontend
 ```
 
-## Rutas locales de acceso
-```bash
-    Backend (Laravel)
-    http://localhost:8000/
-
-    Frontend (React + Vite)
-    http://localhost:5173/
-```
+### Gestión de Estado con Zustand
+El frontend utiliza **Zustand** como gestor de estado global
 
 ### Notas finales
 Este entorno está diseñado para ejecutarse en cualquier sistema operativo con Docker instalado (Linux, macOS o Windows).

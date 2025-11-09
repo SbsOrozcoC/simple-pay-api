@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function AuthForm({ type = "login", onSubmit }) {
   const [form, setForm] = useState({ name: "", email: "", password: "", password_confirmation: "" });
+  const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleSubmit = (e) => {
@@ -18,8 +20,8 @@ export default function AuthForm({ type = "login", onSubmit }) {
             {type === "login" ? "Iniciar Sesión" : "Crear Cuenta"}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {type === "login"
-              ? "Ingresa a tu cuenta para continuar"
+            {type === "login" 
+              ? "Ingresa a tu cuenta para continuar" 
               : "Regístrate para empezar a usar SimplePay"
             }
           </p>
@@ -107,11 +109,14 @@ export default function AuthForm({ type = "login", onSubmit }) {
           {/* Información adicional */}
           <div className="text-center">
             <p className="text-xs text-gray-500">
-              {type === "login"
-                ? "¿No tienes una cuenta? "
+              {type === "login" 
+                ? "¿No tienes una cuenta? " 
                 : "¿Ya tienes una cuenta? "
               }
-              <span className="text-blue-600 hover:text-blue-500 cursor-pointer font-medium">
+              <span 
+                className="text-blue-600 hover:text-blue-500 cursor-pointer font-medium"
+                onClick={() => type === "login" ? navigate("/register") : navigate("/login")}
+              >
                 {type === "login" ? "Regístrate aquí" : "Inicia sesión aquí"}
               </span>
             </p>
