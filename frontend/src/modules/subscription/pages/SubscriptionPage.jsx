@@ -56,7 +56,7 @@ export default function SubscriptionPage() {
                     navigate('/panel');
                 });
             } else {
-                Swal.fire('Error', 'Ocurrió un error al procesar la suscripción', 'error');
+                Swal.fire('Error', 'Ocurrió un error al procesar la suscripción, ya cuenta con una suscripción activa', 'error');
             }
         } finally {
             setIsLoading(false);

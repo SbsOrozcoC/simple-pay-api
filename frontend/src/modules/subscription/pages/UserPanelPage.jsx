@@ -8,7 +8,7 @@ import useAuthStore from '../../auth/store/authStore';
 
 export default function UserPanelPage() {
     const navigate = useNavigate();
-    const { subscription, setSubscription, loadSubscription } = useAuthStore();
+    const { subscription, updateSubscription, loadSubscription } = useAuthStore();
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingStatus, setIsLoadingStatus] = useState(true);
 
@@ -38,7 +38,7 @@ export default function UserPanelPage() {
                 const response = await subscriptionService.cancelSubscription();
                 if (response.status === 'success') {
                     Swal.fire('Cancelada', response.message, 'success');
-                    setSubscription(response.subscription);
+                    updateSubscription(response.subscription);
                 }
             } catch (error) {
                 Swal.fire('Error', 'No se pudo cancelar la suscripción', 'error');
