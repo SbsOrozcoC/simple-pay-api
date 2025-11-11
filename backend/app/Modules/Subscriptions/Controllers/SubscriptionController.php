@@ -72,18 +72,25 @@ class SubscriptionController extends Controller
             $stripe = new \Stripe\StripeClient($stripeSecret);
             $user = $request->user();
 
-            $customer = $stripe->customers->create([
-                'email' => $user->email,
-                'name' => $user->name,
-                'metadata' => [
-                    'user_id' => $user->id
-                ]
-            ]);
+            //VERIFICAR SI YA TIENE UN CUSTOMER ID Y USARLO
+            if (!$user->stripe_customer_id) {
+                $customer = $stripe->customers->create([
+                    'email' => $user->email,
+                    'name' => $user->name,
+                    'metadata' => [
+                        'user_id' => $user->id
+                    ]
+                ]);
 
-            $user->update(['stripe_customer_id' => $customer->id]);
+                //GUARDAR INMEDIATAMENTE EL CUSTOMER ID
+                $user->stripe_customer_id = $customer->id;
+                $user->save();
+            } else {
+                $customer = $stripe->customers->retrieve($user->stripe_customer_id);
+            }
 
             $session = $stripe->checkout->sessions->create([
-                'customer' => $customer->id,
+                'customer' => $user->stripe_customer_id, //USAR EL ID GUARDADO
                 'payment_method_types' => ['card'],
                 'line_items' => [[
                     'price_data' => [
@@ -100,11 +107,18 @@ class SubscriptionController extends Controller
                     'quantity' => 1,
                 ]],
                 'mode' => 'subscription',
-                'success_url' => 'http://localhost:5173/dashboard?subscription=success&session_id={CHECKOUT_SESSION_ID}',
+                'success_url' => 'http://localhost:8000/api/subscription/success?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => 'http://localhost:5173/subscription?subscription=cancelled',
                 'metadata' => [
                     'user_id' => $user->id,
                 ],
+            ]);
+
+            //LOG PARA DEBUG
+            \Log::info('Checkout session created', [
+                'user_id' => $user->id,
+                'stripe_customer_id' => $user->stripe_customer_id,
+                'session_id' => $session->id
             ]);
 
             return response()->json([
@@ -124,45 +138,82 @@ class SubscriptionController extends Controller
         try {
             $sessionId = $request->get('session_id');
 
+            \Log::info('=== SUBSCRIPTION SUCCESS START ===');
+            \Log::info('Session ID received: ' . $sessionId);
+
             if (!$sessionId) {
                 return redirect('http://localhost:5173/dashboard?subscription=error&message=missing_session_id');
             }
 
             $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+
             $session = $stripe->checkout->sessions->retrieve($sessionId);
 
+            \Log::info('Session retrieved successfully', [
+                'session_id' => $session->id,
+                'customer' => $session->customer,
+                'payment_status' => $session->payment_status,
+                'subscription_id' => $session->subscription
+            ]);
+
             if ($session->payment_status === 'paid' && $session->subscription) {
-                // Buscar usuario por customer_id de Stripe ya que no hay autenticación
                 $user = User::where('stripe_customer_id', $session->customer)->first();
 
-                if ($user) {
-                    $stripeSubscription = $stripe->subscriptions->retrieve($session->subscription);
-
-                    $user->update([
-                        'is_premium' => true,
-                        'subscription_status' => 'active',
-                        'stripe_subscription_id' => $session->subscription,
-                        'subscription_ends_at' => date('Y-m-d H:i:s', $stripeSubscription->current_period_end)
-                    ]);
-
-                    Subscription::updateOrCreate(
-                        ['user_id' => $user->id],
-                        [
-                            'status' => 'active',
-                            'amount' => 10.00,
-                            'transaction_id' => $session->id,
-                            'stripe_subscription_id' => $session->subscription,
-                            'activated_at' => now()
-                        ]
-                    );
+                if (!$user) {
+                    \Log::error('User not found with stripe_customer_id: ' . $session->customer);
+                    return redirect('http://localhost:5173/dashboard?subscription=error&message=user_not_found');
                 }
 
-                return redirect('http://localhost:5173/dashboard?subscription=success&session_id=' . $sessionId);
+                \Log::info('User found for subscription', [
+                    'user_id' => $user->id,
+                    'stripe_customer_id' => $user->stripe_customer_id
+                ]);
+
+                $subscriptionId = $session->subscription;
+                $stripeSubscription = $stripe->subscriptions->retrieve($subscriptionId);
+
+                \Log::info('Stripe subscription retrieved', [
+                    'subscription_id' => $stripeSubscription->id,
+                    'status' => $stripeSubscription->status,
+                    'current_period_end' => $stripeSubscription->current_period_end
+                ]);
+
+                $user->update([
+                    'is_premium' => true,
+                    'subscription_status' => 'active',
+                    'stripe_subscription_id' => $subscriptionId,
+                    'subscription_ends_at' => date('Y-m-d H:i:s', $stripeSubscription->current_period_end)
+                ]);
+
+                Subscription::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'status' => 'active',
+                        'amount' => 10.00,
+                        'transaction_id' => $session->id,
+                        'stripe_subscription_id' => $subscriptionId,
+                        'activated_at' => now()
+                    ]
+                );
+
+                \Log::info('User subscription updated successfully', [
+                    'user_id' => $user->id,
+                    'is_premium' => $user->is_premium,
+                    'subscription_status' => $user->subscription_status
+                ]);
+
+                return redirect('http://localhost:5173/dashboard?subscription=success');
             }
+
+            \Log::error('Payment not successful', [
+                'payment_status' => $session->payment_status,
+                'has_subscription' => !is_null($session->subscription)
+            ]);
 
             return redirect('http://localhost:5173/dashboard?subscription=error&message=payment_failed');
         } catch (Exception $e) {
-            Log::error('Subscription success error: ' . $e->getMessage());
+            \Log::error('Subscription success error: ' . $e->getMessage());
+            \Log::error('Error trace: ' . $e->getTraceAsString());
             return redirect('http://localhost:5173/dashboard?subscription=error&message=server_error');
         }
     }
