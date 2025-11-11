@@ -1,6 +1,7 @@
-import { authService } from '../../auth/services/authService';
+import { loadStripe } from '@stripe/stripe-js';
 
 const API_URL = 'http://localhost:8000/api';
+const stripePromise = loadStripe('pk_test_51SRx4TBss6pChZdyRTSE4SGYq8Ky5lQvKwbxeZZp1CuAX8gRP6FydvouKrIj1TAUhaKbNZCfFipj6IBaw433iKzJ00uhVgCKw6');
 
 export const subscriptionService = {
   checkout: async () => {
@@ -37,4 +38,41 @@ export const subscriptionService = {
     });
     return await response.json();
   },
+
+  // STRIPE METHODS - CORREGIDOS
+  createStripeCheckoutSession: async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/stripe/create-checkout-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error del servidor: ${response.status}`);
+    }
+    
+    return await response.json();
+  },
+
+  redirectToStripeCheckout: async (sessionId) => {
+    try {
+      const stripe = await stripePromise;
+      
+      console.log('Redirigiendo a Stripe con sessionId:', sessionId);
+      
+      const result = await stripe.redirectToCheckout({
+        sessionId: sessionId,
+      });
+
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+    } catch (error) {
+      console.error('Stripe checkout error:', error);
+      throw error;
+    }
+  }
 };

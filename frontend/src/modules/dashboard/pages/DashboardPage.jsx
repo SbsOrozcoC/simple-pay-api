@@ -27,13 +27,13 @@ export default function DashboardPage() {
   const recentActivity = subscription ? 1 : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen overflow-auto bg-gray-50">
       <Navbar />
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Welcome Header with Subscription Status */}
         <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
+          <div className="bg-white overflow-auto shadow-sm rounded-lg border border-gray-200">
             <div className="px-6 py-8">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex-1">
