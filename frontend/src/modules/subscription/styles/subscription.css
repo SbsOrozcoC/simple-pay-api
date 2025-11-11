@@ -20,9 +20,12 @@
   transition: all 0.2s ease-in-out;
 }
 
-/* Animaciones de carga */
 .loading-spinner {
   border-top-color: transparent;
+}
+
+.StripeElement {
+  z-index: 9999;
 }
 
 @media (max-width: 768px) {

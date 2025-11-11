@@ -11,8 +11,23 @@ class User extends Authenticatable
 {
     use HasApiTokens, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password'];
+    protected $fillable = [
+        'name', 
+        'email', 
+        'password',
+        'is_premium',
+        'subscription_status',
+        'stripe_customer_id',
+        'stripe_subscription_id',
+        'subscription_ends_at'
+    ];
+
     protected $hidden = ['password', 'remember_token'];
+    
+    protected $casts = [
+        'is_premium' => 'boolean',
+        'subscription_ends_at' => 'datetime'
+    ];
 
     public function subscriptions()
     {

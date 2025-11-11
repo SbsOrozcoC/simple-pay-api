@@ -62,6 +62,8 @@ export default function UserPanelPage() {
         );
     }
 
+    const hasActiveSubscription = subscription?.status === 'active';
+
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar />
@@ -80,7 +82,7 @@ export default function UserPanelPage() {
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-xl font-semibold text-gray-900">Tu Suscripción</h2>
-                                {(!subscription || subscription.status !== 'active') && (
+                                {!hasActiveSubscription && (
                                     <button
                                         onClick={() => navigate('/subscription')}
                                         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
@@ -104,30 +106,34 @@ export default function UserPanelPage() {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Plan Actual</label>
                                     <p className="text-gray-900 font-medium">
-                                        {subscription?.status === 'active' ? 'Premium' : 'Básico'}
+                                        {hasActiveSubscription ? 'Premium' : 'Básico'}
                                     </p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${subscription?.status === 'active'
-                                        ? 'bg-green-100 text-green-800'
-                                        : subscription?.status === 'canceled'
-                                            ? 'bg-gray-100 text-gray-800'
-                                            : 'bg-yellow-100 text-yellow-800'
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${hasActiveSubscription
+                                            ? 'bg-green-100 text-green-800'
+                                            : subscription?.status === 'canceled'
+                                                ? 'bg-yellow-100 text-yellow-800'
+                                                : 'bg-gray-100 text-gray-800'
                                         }`}>
-                                        {subscription?.status || 'inactive'}
+                                        {subscription?.status === 'active' ? 'Activa' :
+                                            subscription?.status === 'canceled' ? 'Cancelada' : 'Inactiva'}
                                     </span>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Miembro desde</label>
                                     <p className="text-gray-900">
-                                        {new Date().toLocaleDateString()}
+                                        {subscription?.activated_at
+                                            ? new Date(subscription.activated_at).toLocaleDateString()
+                                            : new Date().toLocaleDateString()
+                                        }
                                     </p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Próxima renovación</label>
                                     <p className="text-gray-900">
-                                        {subscription?.status === 'active' ? 'En 30 días' : 'No aplica'}
+                                        {hasActiveSubscription ? 'En 30 días' : 'No aplica'}
                                     </p>
                                 </div>
                             </div>

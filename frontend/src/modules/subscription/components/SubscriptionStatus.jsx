@@ -1,18 +1,10 @@
-export default function SubscriptionStatus({ 
-  subscription, 
-  onCancel, 
-  isLoading = false,
-  showCancelButton = true 
-}) {
+import React from 'react';
+
+const SubscriptionStatus = ({ subscription, onCancel, isLoading, showCancelButton }) => {
     if (!subscription) {
         return (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center">
-                    <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                    <span className="text-yellow-800 font-medium">No tienes una suscripción activa</span>
-                </div>
+            <div className="text-center py-4">
+                <p className="text-gray-500">No tienes una suscripción activa</p>
             </div>
         );
     }
@@ -21,48 +13,56 @@ export default function SubscriptionStatus({
     const isCanceled = subscription.status === 'canceled';
 
     return (
-        <div className={`border rounded-lg p-6 ${isActive
-                ? 'bg-green-50 border-green-200'
-                : isCanceled
-                    ? 'bg-gray-50 border-gray-200'
-                    : 'bg-yellow-50 border-yellow-200'
-            }`}>
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        Plan Premium - ${subscription.amount}/mes
+        <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                        Plan Premium - ${subscription.amount || '10.00'}/mes
                     </h3>
-
-                    <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isActive
-                                ? 'bg-green-100 text-green-800'
-                                : isCanceled
-                                    ? 'bg-gray-100 text-gray-800'
-                                    : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                            {subscription.status}
-                        </span>
-
-                        {subscription.activated_at && (
-                            <span>Activa desde: {new Date(subscription.activated_at).toLocaleDateString()}</span>
-                        )}
-
-                        {subscription.transaction_id && (
-                            <span>ID: {subscription.transaction_id}</span>
-                        )}
-                    </div>
+                    <p className="text-sm text-gray-600 mb-2">
+                        {isActive ? 'Activa' : 'Inactiva'} desde: {new Date(subscription.activated_at).toLocaleDateString()}
+                    </p>
+                    {subscription.transaction_id && (
+                        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                            <p className="text-xs text-gray-500 mb-1 font-medium">ID de transacción:</p>
+                            <p className="text-xs text-gray-600 break-all font-mono">
+                                {subscription.transaction_id}
+                            </p>
+                        </div>
+                    )}
                 </div>
-
-                {isActive && showCancelButton && (
-                    <button
-                        onClick={onCancel}
-                        disabled={isLoading}
-                        className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                    >
-                        {isLoading ? 'Cancelando...' : 'Cancelar Suscripción'}
-                    </button>
-                )}
+                <span className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 ${isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                    {isActive ? 'Activa' : 'Inactiva'}
+                </span>
             </div>
+
+            {isActive && showCancelButton && onCancel && (
+                <button
+                    onClick={onCancel}
+                    disabled={isLoading}
+                    className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                >
+                    {isLoading ? (
+                        <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Cancelando...
+                        </>
+                    ) : (
+                        'Cancelar Suscripción'
+                    )}
+                </button>
+            )}
+
+            {isCanceled && (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-700 text-center">
+                        Tu suscripción ha sido cancelada y permanecerá activa hasta el final del período actual.
+                    </p>
+                </div>
+            )}
         </div>
     );
-}
+};
+
+export default SubscriptionStatus;

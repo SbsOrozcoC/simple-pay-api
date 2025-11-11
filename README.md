@@ -78,7 +78,8 @@ Asegúrate de que las variables de conexión sean las siguientes:
 5. [ ] **En NUEVA terminal:** `docker exec -it simplepay_backend php artisan key:generate`
 6. [ ] `docker exec -it simplepay_backend php artisan migrate`
 Esto generará la clave de aplicación y creará las tablas necesarias en la base de datos.
-7. [ ] **Abrir en navegador:** http://localhost:5173
+7. [ ] `docker-compose exec backend composer require stripe/stripe-php`
+8. [ ] **Abrir en navegador:** http://localhost:5173
 
 ### ✅ Verificar instalación
 - [ ] Frontend funciona en: 
@@ -103,6 +104,14 @@ Comando	-- Descripción
     docker compose restart frontend          ---  Reinicia el contenedor del frontend
     docker compose up -d --build frontend    ---  Reconstruye solo el frontend
 ```
+
+## Configuración Stripe
+
+1. Crear cuenta en [Stripe](https://stripe.com)
+2. Obtener claves de prueba en Developers → API keys
+3. Crear producto y precio en Stripe Dashboard
+4. Configurar webhook: `https://tudominio.com/api/stripe/webhook`
+5. Copiar Price ID y configurar en `SubscriptionController.php`
 
 ### Gestión de Estado con Zustand
 El frontend utiliza **Zustand** como gestor de estado global

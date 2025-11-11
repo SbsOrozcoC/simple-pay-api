@@ -2,14 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root {
-  height: 100%;
+/* RESET TOTAL DE TAILWIND */
+html, body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: auto !important;
+  height: auto !important;
 }
 
+#root {
+  min-height: 100vh;
+}
+
+/* Reset específico de Tailwind base */
 body {
-  background-color: rgb(243 244 246);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fuerza scroll en todos los componentes principales */
+.min-h-screen {
+  min-height: 100vh;
+  overflow: visible !important;
 }
