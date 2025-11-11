@@ -15,3 +15,4 @@ use App\Modules\Subscriptions\Controllers\SubscriptionController;
 
 Route::middleware('auth:sanctum')->post('/stripe/create-checkout-session', [SubscriptionController::class, 'createCheckoutSession']);
 Route::post('/stripe/webhook', [SubscriptionController::class, 'handleWebhook']);
+Route::get('/subscription/success', [SubscriptionController::class, 'success']);

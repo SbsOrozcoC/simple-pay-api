@@ -4,6 +4,7 @@ namespace App\Modules\Subscriptions\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Subscriptions\Models\Subscription;
+use App\Modules\Auth\Models\User;
 use App\Modules\Subscriptions\Requests\CheckoutRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -99,8 +100,8 @@ class SubscriptionController extends Controller
                     'quantity' => 1,
                 ]],
                 'mode' => 'subscription',
-                'success_url' => url('/api/subscription/success?session_id={CHECKOUT_SESSION_ID}'),
-                'cancel_url' => url('/api/subscription/cancel'),
+                'success_url' => 'http://localhost:5173/dashboard?subscription=success&session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => 'http://localhost:5173/subscription?subscription=cancelled',
                 'metadata' => [
                     'user_id' => $user->id,
                 ],
@@ -118,62 +119,51 @@ class SubscriptionController extends Controller
         }
     }
 
-    public function success(Request $request): JsonResponse
+    public function success(Request $request)
     {
         try {
             $sessionId = $request->get('session_id');
 
             if (!$sessionId) {
-                return response()->json(['error' => 'Session ID missing'], 400);
+                return redirect('http://localhost:5173/dashboard?subscription=error&message=missing_session_id');
             }
 
             $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
             $session = $stripe->checkout->sessions->retrieve($sessionId);
 
             if ($session->payment_status === 'paid' && $session->subscription) {
-                $user = $request->user();
+                // Buscar usuario por customer_id de Stripe ya que no hay autenticación
+                $user = User::where('stripe_customer_id', $session->customer)->first();
 
-                $stripeSubscription = $stripe->subscriptions->retrieve($session->subscription);
+                if ($user) {
+                    $stripeSubscription = $stripe->subscriptions->retrieve($session->subscription);
 
-                $user->update([
-                    'is_premium' => true,
-                    'subscription_status' => 'active',
-                    'stripe_customer_id' => $session->customer,
-                    'stripe_subscription_id' => $session->subscription,
-                    'subscription_ends_at' => date('Y-m-d H:i:s', $stripeSubscription->current_period_end)
-                ]);
-
-                Subscription::updateOrCreate(
-                    ['user_id' => $user->id],
-                    [
-                        'status' => 'active',
-                        'amount' => 10.00,
-                        'transaction_id' => $session->id,
+                    $user->update([
+                        'is_premium' => true,
+                        'subscription_status' => 'active',
                         'stripe_subscription_id' => $session->subscription,
-                        'activated_at' => now()
-                    ]
-                );
+                        'subscription_ends_at' => date('Y-m-d H:i:s', $stripeSubscription->current_period_end)
+                    ]);
 
-                return response()->json([
-                    'message' => 'Suscripción premium activada exitosamente!',
-                    'session_id' => $sessionId,
-                    'premium_active' => true,
-                    'user' => [
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'is_premium' => $user->is_premium
-                    ]
-                ]);
+                    Subscription::updateOrCreate(
+                        ['user_id' => $user->id],
+                        [
+                            'status' => 'active',
+                            'amount' => 10.00,
+                            'transaction_id' => $session->id,
+                            'stripe_subscription_id' => $session->subscription,
+                            'activated_at' => now()
+                        ]
+                    );
+                }
+
+                return redirect('http://localhost:5173/dashboard?subscription=success&session_id=' . $sessionId);
             }
 
-            return response()->json([
-                'error' => 'El pago no fue procesado correctamente'
-            ], 400);
+            return redirect('http://localhost:5173/dashboard?subscription=error&message=payment_failed');
         } catch (Exception $e) {
             Log::error('Subscription success error: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'Error processing subscription: ' . $e->getMessage()
-            ], 500);
+            return redirect('http://localhost:5173/dashboard?subscription=error&message=server_error');
         }
     }
 

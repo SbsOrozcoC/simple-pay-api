@@ -13,6 +13,12 @@ export const subscriptionService = {
         'Authorization': `Bearer ${token}`,
       },
     });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error del servidor: ${response.status}`);
+    }
+
     return await response.json();
   },
 
@@ -24,6 +30,12 @@ export const subscriptionService = {
         'Authorization': `Bearer ${token}`,
       },
     });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error del servidor: ${response.status}`);
+    }
+
     return await response.json();
   },
 
@@ -36,10 +48,16 @@ export const subscriptionService = {
         'Authorization': `Bearer ${token}`,
       },
     });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error del servidor: ${response.status}`);
+    }
+
     return await response.json();
   },
 
-  // STRIPE METHODS - CORREGIDOS
+  // STRIPE METHODS - MEJORADOS
   createStripeCheckoutSession: async () => {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/stripe/create-checkout-session`, {
@@ -49,20 +67,25 @@ export const subscriptionService = {
         'Authorization': `Bearer ${token}`,
       },
     });
-    
+
     if (!response.ok) {
-      throw new Error(`Error del servidor: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(errorData.error || errorData.message || `Error del servidor: ${response.status}`);
     }
-    
+
     return await response.json();
   },
 
   redirectToStripeCheckout: async (sessionId) => {
     try {
       const stripe = await stripePromise;
-      
+
+      if (!sessionId) {
+        throw new Error('No se proporcionó sessionId');
+      }
+
       console.log('Redirigiendo a Stripe con sessionId:', sessionId);
-      
+
       const result = await stripe.redirectToCheckout({
         sessionId: sessionId,
       });

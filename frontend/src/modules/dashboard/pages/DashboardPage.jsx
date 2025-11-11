@@ -1,14 +1,56 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import Navbar from '../components/Navbar';
 import StatsCard from '../components/StatsCard';
 import useAuthStore from '../../auth/store/authStore';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { subscription, loadSubscription, logout } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
 
+  // Manejar parámetros de URL para suscripción
+  useEffect(() => {
+    const subscriptionStatus = searchParams.get('subscription');
+    const sessionId = searchParams.get('session_id');
+    const message = searchParams.get('message');
+
+    if (subscriptionStatus === 'success' && sessionId) {
+      Swal.fire({
+        icon: 'success',
+        title: '¡Suscripción Exitosa!',
+        text: 'Tu suscripción premium ha sido activada correctamente.',
+        confirmButtonText: 'Continuar'
+      }).then(() => {
+        // Recargar datos
+        loadSubscription();
+        // Limpiar URL
+        window.history.replaceState({}, '', '/dashboard');
+      });
+    } else if (subscriptionStatus === 'error') {
+      let errorMessage = 'Ocurrió un error al procesar tu suscripción';
+      if (message === 'missing_session_id') {
+        errorMessage = 'Falta el ID de sesión. Por favor, contacta con soporte.';
+      } else if (message === 'payment_failed') {
+        errorMessage = 'El pago no fue procesado correctamente. Intenta nuevamente.';
+      } else if (message === 'server_error') {
+        errorMessage = 'Error del servidor. Por favor, intenta más tarde.';
+      }
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Error en la suscripción',
+        text: errorMessage,
+        confirmButtonText: 'Entendido'
+      }).then(() => {
+        window.history.replaceState({}, '', '/dashboard');
+      });
+    }
+  }, [searchParams, loadSubscription]);
+
+  // Cargar datos iniciales
   useEffect(() => {
     const initializeDashboard = async () => {
       await loadSubscription();
@@ -44,10 +86,10 @@ export default function DashboardPage() {
                   {!isLoading && (
                     <div className="mt-4 flex flex-wrap items-center gap-3">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${subscription?.status === 'active'
-                          ? 'bg-green-100 text-green-800'
-                          : subscription?.status === 'canceled'
-                            ? 'bg-gray-100 text-gray-800'
-                            : 'bg-yellow-100 text-yellow-800'
+                        ? 'bg-green-100 text-green-800'
+                        : subscription?.status === 'canceled'
+                          ? 'bg-gray-100 text-gray-800'
+                          : 'bg-yellow-100 text-yellow-800'
                         }`}>
                         {subscription ? `Suscripción ${subscription.status}` : 'Sin suscripción activa'}
                       </span>
