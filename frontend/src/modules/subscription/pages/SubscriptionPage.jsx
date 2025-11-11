@@ -67,11 +67,9 @@ export default function SubscriptionPage() {
     const handleStripeSubscribe = async () => {
         setIsLoadingStripe(true);
         try {
-            // 1. PRIMERO crear la sesión de checkout en el backend
             const response = await subscriptionService.createStripeCheckoutSession();
             console.log('Respuesta del backend:', response);
 
-            // 2. Obtener el sessionId de la respuesta
             const sessionId = response.sessionId || response.data?.sessionId;
 
             if (!sessionId) {
@@ -80,7 +78,6 @@ export default function SubscriptionPage() {
 
             console.log('Session ID obtenido:', sessionId);
 
-            // 3. AHORA redirigir a Stripe Checkout con el sessionId
             await subscriptionService.redirectToStripeCheckout(sessionId);
 
         } catch (error) {
@@ -115,7 +112,6 @@ export default function SubscriptionPage() {
             <Navbar />
 
             <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                {/* Header */}
                 <div className="text-center mb-12">
                     <h1 className="text-3xl font-bold text-gray-900 mb-4">Suscripción Premium</h1>
                     <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -124,7 +120,6 @@ export default function SubscriptionPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                    {/* Plan Card */}
                     <div className="space-y-6">
                         <PlanCard
                             onSubscribe={handleSubscribe}
@@ -153,7 +148,6 @@ export default function SubscriptionPage() {
                         </div>
                     </div>
 
-                    {/* Status Panel */}
                     <div className="space-y-6">
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                             <h2 className="text-xl font-semibold text-gray-900 mb-4">Estado de tu Suscripción</h2>
@@ -171,7 +165,6 @@ export default function SubscriptionPage() {
                             )}
                         </div>
 
-                        {/* Info Box */}
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                             <div className="flex">
                                 <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
